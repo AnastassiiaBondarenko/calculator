@@ -5,7 +5,57 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentResult = null;
 
     function updateScreen() {
-        screen.textContent = currentInput;
+        screen.textContent = currentInput || '0';
+    }
+
+    function clearCalculator() {
+        currentInput = '';
+        currentOperator = '';
+        currentResult = null;
+    }
+
+    function handleNumberClick(value) {
+        currentInput += value;
+    }
+
+    function handleDecimalClick() {
+        if (!currentInput.includes('.')) {
+            currentInput += '.';
+        }
+    }
+
+    function handleOperatorClick(value) {
+        if (currentOperator === '' || currentInput === '') {
+            currentOperator = value;
+            if (currentResult === null) {
+                currentResult = parseFloat(currentInput);
+            }
+            currentInput = '';
+        } else {
+            evaluateExpression();
+            currentOperator = value;
+        }
+    }
+
+    function evaluateExpression() {
+        const num = parseFloat(currentInput);
+        if (currentOperator === '+') {
+            currentResult += num;
+        } else if (currentOperator === '-') {
+            currentResult -= num;
+        } else if (currentOperator === 'x') {
+            currentResult *= num;
+        } else if (currentOperator === '/') {
+            if (num !== 0) {
+                currentResult /= num;
+            } else {
+                alert("Cannot divide by zero");
+                clearCalculator();
+                return;
+            }
+        }
+        currentInput = currentResult.toString();
+        currentOperator = '';
     }
 
     document.querySelectorAll('.btn').forEach((button) => {
@@ -13,51 +63,17 @@ document.addEventListener('DOMContentLoaded', function () {
             const value = button.textContent;
 
             if (value >= '0' && value <= '9') {
-                currentInput += value;
+                handleNumberClick(value);
             } else if (value === '.') {
-                if (!currentInput.includes('.')) {
-                    currentInput += value;
-                }
+                handleDecimalClick();
             } else if (value === 'c') {
-                currentInput = '';
-                currentOperator = '';
-                currentResult = null;
+                clearCalculator();
             } else if (value === '=') {
                 if (currentOperator && currentInput !== '') {
-                    if (currentResult === null) {
-                        currentResult = parseFloat(currentInput);
-                    } else {
-                        const num = parseFloat(currentInput);
-                        if (currentOperator === '+') {
-                            currentResult += num;
-                        } else if (currentOperator === '-') {
-                            currentResult -= num;
-                        } else if (currentOperator === 'x') {
-                            currentResult *= num;
-                        } else if (currentOperator === '/') {
-                            if (num !== 0) {
-                                currentResult /= num;
-                            } else {
-                                alert("Cannot divide by zero");
-                                currentInput = '';
-                                currentOperator = '';
-                                currentResult = null;
-                                updateScreen();
-                                return;
-                            }
-                        }
-                    }
-                    currentInput = currentResult.toString();
-                    currentOperator = '';
+                    evaluateExpression();
                 }
             } else {
-                if (currentOperator === '') {
-                    currentOperator = value;
-                    if (currentResult === null) {
-                        currentResult = parseFloat(currentInput);
-                    }
-                    currentInput = '';
-                }
+                handleOperatorClick(value);
             }
 
             updateScreen();
